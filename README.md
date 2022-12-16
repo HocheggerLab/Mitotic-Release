@@ -20,6 +20,8 @@ A pretrained CNN classifies the nuclei as mitotic or interphase.
 The input metadata are provided via an Excel file (see data/sample_metadata.xlsx) and need to be uploaded 
 to the Omero server using the GDSC HCC script on the server.
 
+#TODO generation of Figure still has bug when NaN in dataframe. Bugfix not yet tested
+
 
 
 
