@@ -16,9 +16,12 @@ colors = prop_cycle.by_key()['color']
 
 
 def data_prep(df):
-    df.loc[df['MI'] == ['NaN'], 'MI'] = np.NaN
-    df['MI'] = df['MI'].fillna(method="ffill").astype('float')
-    return df
+    for image in df.image.unique():
+        if df.loc[df['image'] == image, 'MI'].isna().sum() > 5:
+            return df.drop(df.loc[df['image'] == 400966].index)
+        df.loc[df['MI'] == 'NaN', 'MI'] = np.NaN
+        df['MI'] = df['MI'].fillna(method="ffill").astype('float')
+        return df
 
 def mitotic_index_plot(df, path, plate_name):
     print("generating figure")
@@ -53,7 +56,7 @@ def auc_plot(df, path, plate_name):
     value_list = []
     for i in range(len(df_grouped) // 24):
         x = df_grouped.iloc[i * 24:(i + 1) * 24, 5]
-        y = df_grouped.iloc[i * 24:(i + 1) * 24, 7]
+        y = df_grouped.iloc[i * 24:(i + 1) * 24, 6]
         area = np.trapz(y, x=x, axis=- 1)
         value_list.append(area)
 
@@ -76,7 +79,7 @@ def auc_plot(df, path, plate_name):
 # test
 if __name__ == '__main__':
     path = pathlib.Path.home() / 'Desktop'
-    df = pd.read_csv('../data/sample.csv', index_col=0)
+    df = pd.read_csv('../data/sample_data.csv')
     mitotic_index_plot(data_prep(df), path, 'sample_figure')
     auc_plot(data_prep(df), path, 'sample_AUC_figure')
 

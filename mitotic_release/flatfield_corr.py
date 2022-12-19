@@ -25,7 +25,7 @@ def flatfieldcorr(meta_data, exp_paths) -> dict:
     plate = meta_data.plate_obj
     channels = meta_data.channels
     template_path = exp_paths.flatfield_templates
-    if len(glob.glob(f"{str(template_path)}/*.tif")) == len(channels):
+    if len(glob.glob(f"{str(template_path)}/*.tif")) == 1:
         return load_corr_dict(template_path, channels)
     return generate_corr_dict(plate, channels, template_path)
 

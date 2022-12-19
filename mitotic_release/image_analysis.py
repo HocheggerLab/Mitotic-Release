@@ -33,7 +33,7 @@ class Image:
         self.channels = self._meta_data.channels
         self.exp_data = self._meta_data.well_conditions(self._well.getId())
         row_list = list('ABCDEFGHIJKL')
-        self.well_pos = f"{row_list[self._well.row]}{self._well.column}"
+        self.well_pos = f"{row_list[self._well.row]}{self._well.column+1}"
         self.image_id = self._omero_image.getId()
         self.mi_model = self._get_mi_model()
         
@@ -63,7 +63,7 @@ class Image:
                 'MI': [],
                 'cell_count': []
             }
-            nuclei_data = self.analyse_image(img, mask)
+            nuclei_data = self.analyse_image(img, mask) # generates a dictionary of nuclei images and coordiates
             if time in time_points:
                 fig_number = time_points.index(time)
                 ax[fig_number].imshow(scaled, cmap='gray')
@@ -129,11 +129,10 @@ class Image:
         if len(np.array(nuclei_data).shape) == 4:
             self.get_mi_data(np.array(nuclei_data), dict_mit_index)
         else:
-            dict_mit_index['MI'].append(np.NaN)
+            dict_mit_index['MI'] = np.NaN
+            dict_mit_index['cell_count'] = np.NaN
         return pd.DataFrame \
-            .from_dict(dict_mit_index, orient='index') \
-            .T \
-            .fillna(method="ffill")
+            .from_dict(dict_mit_index, orient='index').T
 
 
 if __name__ == "__main__":
@@ -141,8 +140,8 @@ if __name__ == "__main__":
     def feature_extraction_test(conn=None):
         meta_data = MetaData(1059, conn)
         exp_paths = ExpPaths(meta_data)
-        well = conn.getObject("well", 11553)
-        omero_image = conn.getObject("Image", 400921)
+        well = conn.getObject("well", 11561)
+        omero_image = conn.getObject("Image", 400966)
         flatfield_dict = flatfieldcorr(meta_data, exp_paths)
         image = Image(well, omero_image, meta_data, exp_paths, flatfield_dict)
         df_final = image.mitotic_index()
