@@ -1,4 +1,4 @@
-# Program to analyse Omero high-throughput microscopy images
+# Program to analyse timecousre experiments to quantify interphase-mitosis transitions using omero screen data
 
 current version 0.1.0
 
