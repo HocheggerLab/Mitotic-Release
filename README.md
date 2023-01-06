@@ -2,7 +2,7 @@
 
 current version 0.1.0
 
-This is a alpha version of the program; additional bug fixes and testing necessary
+This is a first version of the program; additional bug fixes and testing necessary
 Requires a connection to an active Omero server
 
 
