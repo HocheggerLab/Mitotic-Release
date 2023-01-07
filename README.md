@@ -21,7 +21,6 @@ The input metadata are provided via an Excel file (see data/sample_metadata.xlsx
 to the Omero server using the GDSC hcs script on the server.
 
 #TODO expand to multi-channel data. 
-#TODO adapt to mitotic exit analysis 
-
+#TODO adapt to mitotic analysis for exit assay
 
 

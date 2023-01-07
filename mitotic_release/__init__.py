@@ -9,7 +9,7 @@ from stardist.models import StarDist2D
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
 logging.getLogger('tensorflow').setLevel(logging.FATAL)
 
-
+# generate class to provid edefault settings for program
 class Defaults:
     """Store the default variables to read the Excel input file"""
     DEFAULT_DEST_DIR = "Desktop"  # Decides where the final data folder will be made
