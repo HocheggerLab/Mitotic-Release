@@ -97,7 +97,7 @@ class TrainingScreen:
             resize_image = image.resize((450, 450))
             self.photo = ImageTk.PhotoImage(resize_image)
         else:
-            np.save(f'models/{self.nuclei.image_ID}.npy',self.dict_all)
+            np.save(f'../CNN_Training/TrainingData/{self.nuclei.image_ID}.npy',self.dict_all)
 
     def classify_mitosis(self):
         if count < len(self.nuclei.nuclei_list):

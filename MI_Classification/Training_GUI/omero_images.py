@@ -22,7 +22,7 @@ class OmeroImages:
         conn = BlitzGateway(username, password, host='ome2.hpc.sussex.ac.uk')
         conn.connect()
         img_object = conn.getObject("Image", self.image_ID)
-        pixels = object.getPrimaryPixels()
+        pixels = img_object.getPrimaryPixels()
         for i in self.timepoints:
             img = pixels.getPlane(0, 0, i)
             image_list.append(img)

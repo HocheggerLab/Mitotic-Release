@@ -3,7 +3,7 @@ from mitotic_release.general_functions import omero_connect
 from mitotic_release.data_structure import MetaData, ExpPaths
 from mitotic_release.flatfield_corr import flatfieldcorr
 from mitotic_release.well_loop import well_loop
-from mitotic_release.release_figure import data_prep, mitotic_index_plot, auc_plot
+from mitotic_release.release_figure import data_prep, mitotic_index_plot
 import pandas as pd
 
 
@@ -19,8 +19,7 @@ def main(plate_id, conn=None):
         df_final = pd.concat([df_final, well_data])
     df_final.to_csv(exp_paths.final_data / f"{meta_data.plate}_final_data.csv")
     df_cleaned = data_prep(df_final)
-    mitotic_index_plot(df_cleaned, exp_paths.final_data, f"{meta_data.plate}_release")
-    auc_plot(df_cleaned, exp_paths.final_data, f"{meta_data.plate}_release_AUC")
+    mitotic_index_plot(df_cleaned, exp_paths.final_data)
 
 
 

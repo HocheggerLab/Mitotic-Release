@@ -1,4 +1,4 @@
-,well,row,column,image,cell_line,siRNA,1NM_conc,time,MI,cell_count
+,well,row,column,image,cell_line,condition,1NM_conc,time,MI,cell_count
 0,G3,6,2,401002,U2OScdk1as,siB55all,0.25,0,5.65,177
 0,G3,6,2,401002,U2OScdk1as,siB55all,0.25,10,3.85,182
 0,G3,6,2,401002,U2OScdk1as,siB55all,0.25,20,4.21,190
