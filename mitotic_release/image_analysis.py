@@ -3,6 +3,7 @@ from mitotic_release.data_structure import MetaData, ExpPaths
 from mitotic_release.flatfield_corr import flatfieldcorr
 from mitotic_release.general_functions import save_fig, filter_segmentation, omero_connect, scale_img
 from pathlib import Path
+import ezomero
 import numpy as np
 from csbdeep.utils import normalize
 from skimage import measure
@@ -77,6 +78,7 @@ class Image:
             df_mi = pd.concat([df_mi, df_timepoint])
         save_fig(self._paths.segmentation_check, f'{self.well_pos}_{self.image_id}_segmentation_check')
         return df_mi
+
 
     @staticmethod
     def segment_stardist(img):

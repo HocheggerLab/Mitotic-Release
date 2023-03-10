@@ -8,6 +8,7 @@ import ezomero
 import  numpy as np
 import napari
 from tqdm import tqdm
+from skimage import io
 from skimage.segmentation import clear_border
 from csbdeep.utils import normalize
 import gc
@@ -56,6 +57,7 @@ def analyse_image(img, mask):
     w = 10
     for region in measure.regionprops(mask):
         b = img[region.bbox[0]:region.bbox[2], region.bbox[1]:region.bbox[3]]
+        print(b.shape)
         if 10 <= len(b) <= 30:
             centroid = region.centroid
             i = centroid[0]
@@ -88,20 +90,22 @@ def make_bbox(bbox_extents):
     bbox_rect = np.moveaxis(bbox_rect, 2, 0)
     return bbox_rect
 
-def show_images(image_list, box_data_timecourse):
+def show_images(image_list, mask):
     # Create a new napari viewer
     viewer = napari.Viewer()
     # Add the image layer
     for img in image_list:
         viewer.add_image(img)
-    for box_data in box_data_timecourse:
-        bbox_rects = make_bbox(box_data['coords'])
-        viewer.add_shapes(
-            bbox_rects,
-            face_color='transparent',
-            edge_color='green',
-            name='bounding box',
-        )
+        viewer.add_image(mask)
+    # for box_data in box_data_timecourse:
+    #     print(box_data['coords'])
+    #     bbox_rects = make_bbox(box_data['coords'])
+    #     viewer.add_shapes(
+    #         bbox_rects,
+    #         face_color='transparent',
+    #         edge_color='green',
+    #         name='bounding box',
+    #     )
 
 
     # Create a new labels layer for the bounding boxes
@@ -126,15 +130,19 @@ if __name__ == '__main__':
 
     @omero_connect
     def main(conn=None):
-        meta_data = MetaData(PLATE_ID, conn)
-        exp_paths = ExpPaths(meta_data)
-        flatfield_dict = flatfieldcorr(meta_data, exp_paths)
-        image_list = mitotic_timecourse(flatfield_dict, IMAGE_ID, conn)
+        # meta_data = MetaData(PLATE_ID, conn)
+        # exp_paths = ExpPaths(meta_data)
+        # flatfield_dict = flatfieldcorr(meta_data, exp_paths)
+        # image_list = mitotic_timecourse(flatfield_dict, IMAGE_ID, conn)
+        img = io.imread('/Users/hh65/Desktop/Index.idx.ome.tiff')
+        image_list = [img]
         mask = segment_image(image_list[SEGMENTATION_CHANNEL])
+        bbox = analyse_image(img[0,:,:],mask[0,:,:])
         box_data_timecourse = []
-        for time in range(mask.shape[0]):
-            box_data = analyse_image(image_list[SEGMENTATION_CHANNEL][time,:,:], mask[time,:,:])
-            box_data_timecourse.append(box_data)
-        show_images(image_list, box_data_timecourse)
+        print(bbox['data'][0].shape)
+        # for time in range(mask.shape[0]):
+        #     box_data = analyse_image(image_list[SEGMENTATION_CHANNEL][time,:,:], mask[time,:,:])
+        #     box_data_timecourse.append(box_data)
+        show_images(image_list, mask)
 
     main()
