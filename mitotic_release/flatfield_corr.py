@@ -12,6 +12,7 @@ import pathlib
 import glob
 import platform
 from itertools import chain
+import random
 
 if platform.system() == 'Darwin':
     matplotlib.use('MacOSX')  # avoid matplotlib warning about interactive backend
@@ -44,7 +45,9 @@ def get_images(plate):
     for well in well_list:
         images = list(well.listChildren())
         image_list.append(images)
-    return [obj.getImage() for obj in list(chain(*image_list))]
+    all_images = [obj.getImage() for obj in list(chain(*image_list))]
+
+    return random.sample(all_images, 100) if len(all_images) > 100 else all_images
 
 
 def generate_corr_dict(plate, channels, template_path):

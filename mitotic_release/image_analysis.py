@@ -140,10 +140,10 @@ class Image:
 if __name__ == "__main__":
     @omero_connect
     def feature_extraction_test(conn=None):
-        meta_data = MetaData(1059, conn)
+        meta_data = MetaData(1546, conn)
         exp_paths = ExpPaths(meta_data)
-        well = conn.getObject("well", 11561)
-        omero_image = conn.getObject("Image", 400966)
+        well = conn.getObject("well", 24817)
+        omero_image = conn.getObject("Image", 683906)
         flatfield_dict = flatfieldcorr(meta_data, exp_paths)
         image = Image(well, omero_image, meta_data, exp_paths, flatfield_dict)
         df_final = image.mitotic_index()

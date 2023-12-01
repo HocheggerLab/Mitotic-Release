@@ -9,7 +9,7 @@ from stardist.models import StarDist2D
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
 logging.getLogger('tensorflow').setLevel(logging.FATAL)
 
-# generate class to provid edefault settings for program
+# generate class to provide default settings for program
 class Defaults:
     """Store the default variables to read the Excel input file"""
     DEFAULT_DEST_DIR = "Desktop"  # Decides where the final data folder will be made
@@ -20,6 +20,6 @@ class Defaults:
     NS = 'openmicroscopy.org/omero/client/mapAnnotation'
     FEATURELIST = ['label', 'area', 'intensity_max', 'intensity_mean']
     STARDIST_MODEL = StarDist2D.from_pretrained('2D_versatile_fluo')
-    CELLPOSE_MODEL = '/Users/hh65/Documents/PyCharmNew/Mitotic-Release/data/CellPose_models/Nuclei_Hoechst'
+    CELLPOSE_MODEL = 'Nuclei_Hoechst'
 
 SEPARATOR = "==========================================================================================\n"

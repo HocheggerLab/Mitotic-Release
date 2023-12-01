@@ -5,7 +5,7 @@ from mitotic_release.general_functions import save_fig, generate_image, filter_s
     color_label
 from  pathlib import Path
 from cellpose import models
-from csbdeep.utils import normalize
+
 from skimage import measure, io
 import pandas as pd
 import numpy as np
