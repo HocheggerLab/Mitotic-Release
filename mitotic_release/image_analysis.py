@@ -3,13 +3,12 @@ from mitotic_release.data_structure import MetaData, ExpPaths
 from mitotic_release.flatfield_corr import flatfieldcorr
 from mitotic_release.general_functions import save_fig, filter_segmentation, omero_connect, scale_img
 from pathlib import Path
-import ezomero
-import numpy as np
 from csbdeep.utils import normalize
-from skimage import measure
+from skimage import measure, filters
 import pandas as pd
 import numpy as np
 import keras
+import tensorflow as tf
 from tqdm import tqdm
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -40,18 +39,26 @@ class Image:
         
     @staticmethod
     def _get_mi_model():
-        mi_model_path = Path('../data/MI_model/mi_model01.h5')
+        if Defaults.MAGNIFICATION == '20x':
+            print("Using 20x model")
+            mi_model_path = Path('../MI_Classification/CNN_Training/TrainingData/MI_CNN_model20x.h5')
+        else:
+            print("Using 10x model")
+            mi_model_path = Path('../data/MI_model/mi_model01.h5')
         return keras.models.load_model(mi_model_path)
 
     def mitotic_index(self):
         df_mi = pd.DataFrame()
         pixels = self._omero_image.getPrimaryPixels()
-        time_points = [0, 2, 5, 15]
-        fig, ax = plt.subplots(ncols=len(time_points), figsize=(40, 10))
-        for time in tqdm(range(self._omero_image.getSizeT())):
-            img = pixels.getPlane(0, 0, time) / list(self._flatfield_dict.values())[0]
-            scaled = scale_img(img, (5, 95))
-            mask = self.segment_stardist(scaled)
+        t = self._omero_image.getSizeT()
+        time_points = [0, 2, 5, 15] if t > 1 else [0]
+        flatfield_mask = list(self._flatfield_dict.values())[0]
+        for time in tqdm(range(t)):
+            img = pixels.getPlane(0, 0, time) / flatfield_mask
+            scaled = scale_img(img)
+            blurred_img = filters.gaussian(scaled, sigma=4)
+            mask = self.segment_stardist(blurred_img)
+            print(np.max(mask))
             dict_mit_index = {
                 'well': self.well_pos,
                 'row': self._well.row,
@@ -66,6 +73,9 @@ class Image:
             }
             nuclei_data = self.analyse_image(img, mask) # generates a dictionary of nuclei images and coordiates
             if time in time_points:
+                fig, ax = plt.subplots(ncols=len(time_points), figsize=(10 * len(time_points), 10))
+                if len(time_points) == 1:
+                    ax = [ax]
                 fig_number = time_points.index(time)
                 ax[fig_number].imshow(scaled, cmap='gray')
                 ax[fig_number].axis('off')
@@ -83,42 +93,41 @@ class Image:
     @staticmethod
     def segment_stardist(img):
         """Use stardist model for segmentation and return masks, colored masks and cell counts for Figure"""
-        scaled = scale_img(img)
-        label_objects, nb_labels = Defaults.STARDIST_MODEL.predict_instances(normalize(scaled))
+        label_objects, nb_labels = Defaults.STARDIST_MODEL.predict_instances(normalize(img))
         return filter_segmentation(label_objects)
 
     @staticmethod
     def analyse_image(img, mask):
         dict_1 = {'data': [], 'coords': []}
-        w = 10
+        w = 20 if Defaults.MAGNIFICATION == '20x' else 10
         for region in measure.regionprops(mask):
             b = img[region.bbox[0]:region.bbox[2], region.bbox[1]:region.bbox[3]]
-            if 10 <= len(b) <= 30:
-                centroid = region.centroid
-                i = centroid[0]
-                j = centroid[1]
-                imin = int(round(max(0, i - w)))
-                imax = int(round(min(mask.shape[0], i + w + 1)))
-                jmin = int(round(max(0, j - w)))
-                jmax = int(round(min(mask.shape[1], j + w + 1)))
-                coords = [imin, imax, jmin, jmax]
-                box = img[imin:imax, jmin:jmax]
-                if box.shape == (21, 21):
-                    box1 = box[:, :, np.newaxis]
-                    dict_1['data'].append(box1)
-                    dict_1['coords'].append(coords)
+            centroid = region.centroid
+            i = centroid[0]
+            j = centroid[1]
+            imin = int(round(max(0, i - w)))
+            imax = int(round(min(mask.shape[0], i + w + 1)))
+            jmin = int(round(max(0, j - w)))
+            jmax = int(round(min(mask.shape[1], j + w + 1)))
+            coords = [imin, imax, jmin, jmax]
+            box = img[imin:imax, jmin:jmax]
+            if box.shape == (41, 41):
+                box1 = box[:, :, np.newaxis]
+                dict_1['data'].append(box1)
+                dict_1['coords'].append(coords)
         return dict_1
 
     def generate_patches(self, box, coords):
         imin, imax, jmin, jmax = coords
+
         proba_1 = self.mi_model.predict(box, verbose=0)
-        predict_1 = np.round(proba_1).astype('int')
-        if predict_1 == 1:
+
+        if proba_1 >= 0.5:
             return mpl.patches.Rectangle((jmin, imin), jmax - jmin, imax - imin,
                                          fill=False, edgecolor='red', linewidth=1)
-        elif predict_1 == 0:
+        else:
             return mpl.patches.Rectangle((jmin, imin), jmax - jmin, imax - imin,
-                                         fill=False, edgecolor='blue', linewidth=1)
+                                         fill=False, edgecolor='white', linewidth=1)
 
     def get_mi_data(self, data_01, dict_mit_index):
         predict_1 = self.mi_model.predict(np.array(data_01), verbose=0)
@@ -140,10 +149,10 @@ class Image:
 if __name__ == "__main__":
     @omero_connect
     def feature_extraction_test(conn=None):
-        meta_data = MetaData(1546, conn)
+        meta_data = MetaData(201, conn)
         exp_paths = ExpPaths(meta_data)
-        well = conn.getObject("well", 24817)
-        omero_image = conn.getObject("Image", 683906)
+        well = conn.getObject("well", 251)
+        omero_image = conn.getObject("Image", 1427)
         flatfield_dict = flatfieldcorr(meta_data, exp_paths)
         image = Image(well, omero_image, meta_data, exp_paths, flatfield_dict)
         df_final = image.mitotic_index()

@@ -13,6 +13,7 @@ logging.getLogger('tensorflow').setLevel(logging.FATAL)
 class Defaults:
     """Store the default variables to read the Excel input file"""
     DEFAULT_DEST_DIR = "Desktop"  # Decides where the final data folder will be made
+    MAGNIFICATION = '20x'
     FLATFIELD_TEMPLATES = "flatfield_correction_images"
     DATA = "mitotic_index_data"
     IMGS_CORR = "segmentation_check"

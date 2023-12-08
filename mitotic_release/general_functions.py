@@ -39,14 +39,16 @@ def omero_connect(func):
     @functools.wraps(func)
     def wrapper_omero_connect(*args, **kwargs):
         try:
-            with open('../data/secrets/config.json') as file:
+            with open('../data/secrets/config_test.json') as file:
                 data = json.load(file)
             username = data['username']
             password = data['password']
+            server = data['server']
         except IOError:
             username = input("Username: ")
             password = getpass.getpass(prompt='Password: ')
-        conn = BlitzGateway(username, password, host="ome2.hpc.sussex.ac.uk")
+            server = "ome2.hpx.sussex.ac.uk"
+        conn = BlitzGateway(username, password, host=server)
         value = None
         try:
             print('Connecting to Omero')
@@ -54,7 +56,7 @@ def omero_connect(func):
                 value = func(*args, **kwargs, conn=conn)
                 print('Disconnecting from Omero')
             else:
-                print('Failed to connect to Omero: %s' % conn.getLastError())
+                print(f'Failed to connect to Omero: {conn.getLastError()}')
         finally:
             # No side effects if called without a connection
             conn.close()
