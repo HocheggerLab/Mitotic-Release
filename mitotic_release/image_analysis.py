@@ -87,6 +87,7 @@ class Image:
             df_timepoint = self.get_mi_df(nuclei_data['data'], dict_mit_index)
             df_mi = pd.concat([df_mi, df_timepoint])
         save_fig(self._paths.segmentation_check, f'{self.well_pos}_{self.image_id}_segmentation_check')
+        plt.close()
         return df_mi
 
 

@@ -41,9 +41,9 @@ def omero_connect(func):
         try:
             with open('../data/secrets/config_test.json') as file:
                 data = json.load(file)
-            username = data['username']
-            password = data['password']
-            server = data['server']
+                username = data['username']
+                password = data['password']
+                server = data['server']
         except IOError:
             username = input("Username: ")
             password = getpass.getpass(prompt='Password: ')

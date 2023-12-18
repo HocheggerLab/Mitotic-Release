@@ -8,8 +8,7 @@ import seaborn as sns
 import platform
 if platform.system() == 'Darwin':
     mpl.use('MacOSX')  # avoid matplotlib warning about interactive backend
-
-plt.style.use('../data/style/HHlab_style01.mplstyle')
+plt.style.use('/Users/hh65/Documents/Current_Coding/Mitotic-Release/mitotic_release/HHlab_style01.mplstyle')
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
 

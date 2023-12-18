@@ -1,4 +1,4 @@
-from mitotic_release import SEPARATOR
+from mitotic_release import Defaults, SEPARATOR
 from mitotic_release.general_functions import omero_connect
 from mitotic_release.data_structure import MetaData, ExpPaths
 from mitotic_release.flatfield_corr import flatfieldcorr
@@ -18,8 +18,9 @@ def main(plate_id, conn=None):
         well_data = well_loop(well, meta_data, exp_paths, flatfield_dict)
         df_final = pd.concat([df_final, well_data])
     df_final.to_csv(exp_paths.final_data / f"{meta_data.plate}_final_data.csv")
-    df_cleaned = data_prep(df_final)
-    mitotic_index_plot(df_cleaned, exp_paths.final_data)
+    if Defaults.MAGNIFICATION == '10x':
+        df_cleaned = data_prep(df_final)
+        mitotic_index_plot(df_cleaned, exp_paths.final_data)
 
 
 
