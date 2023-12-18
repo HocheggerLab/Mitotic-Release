@@ -39,7 +39,7 @@ def omero_connect(func):
     @functools.wraps(func)
     def wrapper_omero_connect(*args, **kwargs):
         try:
-            with open('../data/secrets/config_test.json') as file:
+            with open('../data/secrets/config.json') as file:
                 data = json.load(file)
                 username = data['username']
                 password = data['password']

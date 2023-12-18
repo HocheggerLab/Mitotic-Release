@@ -64,9 +64,9 @@ class Image:
                 'row': self._well.row,
                 'column': self._well.column,
                 'image': self._omero_image.getId(),
-                'cell_line': self.exp_data['Cell_Line'],
-                'siRNA': self.exp_data['siRNA'],
-                '1NM_conc': self.exp_data['1NMPP1'],
+                'cell_line': self.exp_data['cell_line'],
+                'siRNA': self.exp_data['condition'],
+                '1NM_conc': self.exp_data['1NM_uM'],
                 'time': time * 10,
                 'MI': [],
                 'cell_count': []

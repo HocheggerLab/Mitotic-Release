@@ -48,7 +48,10 @@ class MetaData:
     def well_conditions(self, current_well):
         well = self.conn.getObject("Well", current_well)
         ann = well.getAnnotation(Defaults.NS)
-        return dict(ann.getValue())
+        if not ann.getValue():
+            return None
+        else:
+            return dict(ann.getValue())
 
 
 
