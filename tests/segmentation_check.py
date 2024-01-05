@@ -12,7 +12,7 @@ import napari
 import keras
 from pathlib import Path
 
-flatfield_mask = io.imread('/Users/hh65/Desktop/test_screen/flatfield_correction_images/flatfield_H2B.tif')
+flatfield_mask = io.imread( Path.cwd().parent / "data" / "PPasescreen1_flatfieldmask.tif")
 STARDIST_MODEL = StarDist2D.from_pretrained('2D_versatile_fluo')
 
 def omero_connect(func):
@@ -25,7 +25,7 @@ def omero_connect(func):
     @functools.wraps(func)
     def wrapper_omero_connect(*args, **kwargs):
         try:
-            with open('../data/secrets/config_test.json') as file:
+            with open('../data/secrets/config.json') as file:
                 data = json.load(file)
             username = data['username']
             password = data['password']
@@ -136,7 +136,7 @@ def display_image_with_bounding_boxes(image, label_objects, coords, predictions)
 
 if __name__ == '__main__':
 
-    image = get_img(1427)
+    image = get_img(695997)
     scaled, masks = segmentation(image)
     nuclei_data = get_nuclei(image, masks)
 

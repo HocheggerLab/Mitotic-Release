@@ -20,8 +20,8 @@ class Image:
     Stores corrected images as dict, and n_mask, c_mask and cyto_mask arrays.
     """
 
-    def __init__(self, well, omero_image, meta_data, exp_paths, flatfield_dict):
-
+    def __init__(self, number, well, omero_image, meta_data, exp_paths, flatfield_dict):
+        self._number = number
         self._well = well
         self._omero_image = omero_image
         self._meta_data = meta_data
@@ -40,10 +40,8 @@ class Image:
     @staticmethod
     def _get_mi_model():
         if Defaults.MAGNIFICATION == '20x':
-            print("Using 20x model")
             mi_model_path = Path('../MI_Classification/CNN_Training/TrainingData/MI_CNN_model20x.h5')
         else:
-            print("Using 10x model")
             mi_model_path = Path('../data/MI_model/mi_model01.h5')
         return keras.models.load_model(mi_model_path)
 
@@ -53,12 +51,11 @@ class Image:
         t = self._omero_image.getSizeT()
         time_points = [0, 2, 5, 15] if t > 1 else [0]
         flatfield_mask = list(self._flatfield_dict.values())[0]
-        for time in tqdm(range(t)):
+        for time in range(t):
             img = pixels.getPlane(0, 0, time) / flatfield_mask
             scaled = scale_img(img)
             blurred_img = filters.gaussian(scaled, sigma=4)
             mask = self.segment_stardist(blurred_img)
-            print(np.max(mask))
             dict_mit_index = {
                 'well': self.well_pos,
                 'row': self._well.row,
@@ -72,7 +69,7 @@ class Image:
                 'cell_count': []
             }
             nuclei_data = self.analyse_image(img, mask) # generates a dictionary of nuclei images and coordiates
-            if time in time_points:
+            if time in time_points and self._number == 0:
                 fig, ax = plt.subplots(ncols=len(time_points), figsize=(10 * len(time_points), 10))
                 if len(time_points) == 1:
                     ax = [ax]
@@ -84,9 +81,11 @@ class Image:
                     box1 = box[np.newaxis, :, :, np.newaxis]
                     rect = self.generate_patches(box1, nuclei_data['coords'][number])
                     ax[fig_number].add_patch(rect)
+                save_fig(self._paths.segmentation_check, f'{self.well_pos}_{self.image_id}_segmentation_check')
+                plt.close()
             df_timepoint = self.get_mi_df(nuclei_data['data'], dict_mit_index)
             df_mi = pd.concat([df_mi, df_timepoint])
-        save_fig(self._paths.segmentation_check, f'{self.well_pos}_{self.image_id}_segmentation_check')
+
         plt.close()
         return df_mi
 

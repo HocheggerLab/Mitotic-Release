@@ -5,14 +5,13 @@ from mitotic_release.image_analysis import Image
 from mitotic_release.general_functions import omero_connect
 import pandas as pd
 import pathlib
+from tqdm import tqdm
 
 
 # Functions to loop through well object, assemble data for images and ave quality control data
 
 def well_loop(well, meta_data, exp_paths, flatfield_dict):
-    if not meta_data.well_conditions(well.getId()):
-        pass
-    else:
+    if meta_data.well_conditions(well.getId()):
         well_pos = f"row_{well.row}_col{well.column}"
         df_well_path = exp_paths.temp_well_data / f'data_{well_pos}'
         # check if file already exists to load dfs and move on
@@ -24,15 +23,15 @@ def well_loop(well, meta_data, exp_paths, flatfield_dict):
             print(f"\nSegmenting and Analysing Images\n{SEPARATOR}")
             df_well = pd.DataFrame()
             image_number = len(list(well.listChildren()))
-            for number in range(image_number):
+            for number in tqdm(range(image_number)):
                 omero_img = well.getImage(number)
-                image = Image(well, omero_img, meta_data, exp_paths, flatfield_dict)
+                image = Image(number, well, omero_img, meta_data, exp_paths, flatfield_dict)
                 df_image = image.mitotic_index()
                 df_well = pd.concat([df_well, df_image])
                 df_well.to_pickle(str(df_well_path))
-
-
         return df_well
+    else:
+        ...
 
 
 if __name__ == "__main__":
