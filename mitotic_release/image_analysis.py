@@ -40,7 +40,7 @@ class Image:
     @staticmethod
     def _get_mi_model():
         if Defaults.MAGNIFICATION == '20x':
-            mi_model_path = Path('../MI_Classification/CNN_Training/TrainingData/MI_CNN_model20x.h5')
+            mi_model_path = Path('../data/MI_model/MI_CNN_model20x.h5')
         else:
             mi_model_path = Path('../data/MI_model/mi_model01.h5')
         return keras.models.load_model(mi_model_path)
