@@ -1,6 +1,6 @@
 import pandas as pd
 from omero.gateway import BlitzGateway
-import pathlib
+from pathlib import Path
 import numpy as np
 from skimage import exposure, color
 from skimage.segmentation import clear_border
@@ -12,9 +12,28 @@ import random
 import getpass
 
 
-def save_fig(path: pathlib, fig_id: str, tight_layout=True, fig_extension="pdf", resolution=300) -> None:
+# def save_fig(path: pathlib, fig_id: str, tight_layout=True, fig_extension="pdf", resolution=300) -> None:
+#     """
+#     coherent saving of matplotlib figures as pdfs (default)
+#     :param path: path for saving
+#     :param fig_id: name of saved figure
+#     :param tight_layout: option, default True
+#     :param fig_extension: option, default pdf
+#     :param resolution: option, default 300dpi
+#     :return: None, saves Figure in poth
+#     """
+#     dest = path / f"{fig_id}.{fig_extension}"
+#     # print("Saving figure", fig_id)
+#     if tight_layout:
+#         plt.tight_layout()
+#   plt.savefig(dest, format=fig_extension, dpi=resolution)
+
+def save_fig(fig,
+    path: Path, fig_id: str, tight_layout : bool = False, fig_extension: str = "pdf",
+        resolution: int = 300) -> None:
     """
     coherent saving of matplotlib figures as pdfs (default)
+    :rtype: object
     :param path: path for saving
     :param fig_id: name of saved figure
     :param tight_layout: option, default True
@@ -22,11 +41,12 @@ def save_fig(path: pathlib, fig_id: str, tight_layout=True, fig_extension="pdf",
     :param resolution: option, default 300dpi
     :return: None, saves Figure in poth
     """
+
     dest = path / f"{fig_id}.{fig_extension}"
-    # print("Saving figure", fig_id)
+    print("Saving figure", fig_id)
     if tight_layout:
-        plt.tight_layout()
-    plt.savefig(dest, format=fig_extension, dpi=resolution)
+        fig.set_tight_layout(True)
+    plt.savefig(dest, format=fig_extension, dpi=resolution, facecolor='white')
 
 
 def omero_connect(func):
@@ -47,7 +67,7 @@ def omero_connect(func):
         except IOError:
             username = input("Username: ")
             password = getpass.getpass(prompt='Password: ')
-            server = "ome2.hpx.sussex.ac.uk"
+            server = "ome2.hpc.sussex.ac.uk"
         conn = BlitzGateway(username, password, host=server)
         value = None
         try:

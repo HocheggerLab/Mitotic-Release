@@ -6,7 +6,8 @@ import random
 from config import username, password
 from csbdeep.utils import normalize
 STARDIST_MODEL = StarDist2D.from_pretrained('2D_versatile_fluo')
-flatfield_correction = io.imread('/Users/hh65/Desktop/test_screen/flatfield_correction_images/flatfield_H2B.tif')
+flatfield_correction = io.imread('/Users/hh65/Desktop/ME_PhosphataseHits_Rpt1/flatfield_correction_images/flatfield_RFP.tif')
+
 class OmeroImages:
 
     def __init__(self, image_id, timepoints, sample_number):
@@ -14,12 +15,13 @@ class OmeroImages:
         self.timepoints = timepoints
         self.sample_number = sample_number
         self.image_list = self.get_images()
-        self.width = 20
+        self.width = 10
         self.nuclei_list = self.get_nuclei(self.image_list)
 
     def get_images(self):
         image_list=[]
-        conn = BlitzGateway(username, password, host='localhost')
+        print(f"login config: {username, password}")
+        conn = BlitzGateway(username, password, host='ome2.hpc.sussex.ac.uk')
         conn.connect()
         img_object = conn.getObject("Image", self.image_ID)
         pixels = img_object.getPrimaryPixels()

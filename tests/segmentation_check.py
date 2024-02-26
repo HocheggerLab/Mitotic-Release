@@ -98,7 +98,7 @@ def get_nuclei (img, label_objects):
     return nuclei_data
 
 def classify_nuclei(nuclei_data):
-    mi_model_path = Path('../MI_Classification/CNN_Training/TrainingData/MI_CNN_model20x.h5')
+    mi_model_path = Path('../MI_Classification/CNN_Training/TrainingData/20x_data/MI_CNN_model20x.h5')
     model = keras.models.load_model(mi_model_path)
     predictions = model.predict(np.array(nuclei_data['data']), verbose=0)
     return predictions, nuclei_data['coords']

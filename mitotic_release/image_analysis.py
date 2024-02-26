@@ -12,7 +12,9 @@ import tensorflow as tf
 from tqdm import tqdm
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import logging
 
+logger = logging.getLogger("omero-screen-napari")
 
 class Image:
     """
@@ -49,8 +51,9 @@ class Image:
         df_mi = pd.DataFrame()
         pixels = self._omero_image.getPrimaryPixels()
         t = self._omero_image.getSizeT()
-        time_points = [0, 2, 5, 15] if t > 1 else [0]
+        time_points = [0, 2, 10] if t > 1 else [0]
         flatfield_mask = list(self._flatfield_dict.values())[0]
+        fig, ax = plt.subplots(ncols=len(time_points), figsize=(10 * len(time_points), 10))
         for time in range(t):
             img = pixels.getPlane(0, 0, time) / flatfield_mask
             scaled = scale_img(img)
@@ -69,23 +72,27 @@ class Image:
                 'cell_count': []
             }
             nuclei_data = self.analyse_image(img, mask) # generates a dictionary of nuclei images and coordiates
+
+            logger.debug(f"time: {time}")
             if time in time_points and self._number == 0:
-                fig, ax = plt.subplots(ncols=len(time_points), figsize=(10 * len(time_points), 10))
+                logger.debug(f"Timepoint: {time * 10}min, generating image for segmentation check")
                 if len(time_points) == 1:
                     ax = [ax]
                 fig_number = time_points.index(time)
+                logger.debug(f"populating ax {fig_number} with image for segmentation check")
                 ax[fig_number].imshow(scaled, cmap='gray')
                 ax[fig_number].axis('off')
-                ax[fig_number].title.set_text(f'timepoint: {time * 10}min')
+                ax[fig_number].set_title(f'timepoint: {time * 10}min')
                 for number, box in enumerate(nuclei_data['data']):
                     box1 = box[np.newaxis, :, :, np.newaxis]
                     rect = self.generate_patches(box1, nuclei_data['coords'][number])
                     ax[fig_number].add_patch(rect)
-                save_fig(self._paths.segmentation_check, f'{self.well_pos}_{self.image_id}_segmentation_check')
-                plt.close()
+
+
+
             df_timepoint = self.get_mi_df(nuclei_data['data'], dict_mit_index)
             df_mi = pd.concat([df_mi, df_timepoint])
-
+        save_fig(fig, self._paths.segmentation_check, f'{self.well_pos}_{self.image_id}_segmentation_check')
         plt.close()
         return df_mi
 
@@ -100,6 +107,7 @@ class Image:
     def analyse_image(img, mask):
         dict_1 = {'data': [], 'coords': []}
         w = 20 if Defaults.MAGNIFICATION == '20x' else 10
+        box_shape = (41, 41) if Defaults.MAGNIFICATION == '20x' else (21, 21)
         for region in measure.regionprops(mask):
             b = img[region.bbox[0]:region.bbox[2], region.bbox[1]:region.bbox[3]]
             centroid = region.centroid
@@ -111,7 +119,7 @@ class Image:
             jmax = int(round(min(mask.shape[1], j + w + 1)))
             coords = [imin, imax, jmin, jmax]
             box = img[imin:imax, jmin:jmax]
-            if box.shape == (41, 41):
+            if box.shape == box_shape:
                 box1 = box[:, :, np.newaxis]
                 dict_1['data'].append(box1)
                 dict_1['coords'].append(coords)
@@ -137,6 +145,7 @@ class Image:
         dict_mit_index['cell_count'] = len(predict_1)
 
     def get_mi_df(self, nuclei_data, dict_mit_index):
+        logger.debug(f"nuclei_data shape: {np.array(nuclei_data).shape}")
         if len(np.array(nuclei_data).shape) == 4:
             self.get_mi_data(np.array(nuclei_data), dict_mit_index)
         else:
@@ -147,16 +156,23 @@ class Image:
 
 
 if __name__ == "__main__":
+
+    data_20x = [1551, 25264, 695922]
+    data_10x = [1841, 32859, 921385]
+
+
     @omero_connect
-    def feature_extraction_test(conn=None):
-        meta_data = MetaData(201, conn)
+    def feature_extraction_test(data, conn=None):
+        meta_data = MetaData(data[0], conn)
         exp_paths = ExpPaths(meta_data)
-        well = conn.getObject("well", 251)
-        omero_image = conn.getObject("Image", 1427)
+        well = conn.getObject("well", data[1])
+        omero_image = conn.getObject("Image", data[2])
         flatfield_dict = flatfieldcorr(meta_data, exp_paths)
-        image = Image(well, omero_image, meta_data, exp_paths, flatfield_dict)
+        image = Image(0, well, omero_image, meta_data, exp_paths, flatfield_dict)
         df_final = image.mitotic_index()
         print(df_final)
 
 
-    feature_extraction_test()
+    feature_extraction_test(data_10x)
+    #feature_extraction_test(data_20x)
+
